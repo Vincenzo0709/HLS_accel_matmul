@@ -1,1 +1,0 @@
-### Vitis HLS dot product

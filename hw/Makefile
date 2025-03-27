@@ -9,7 +9,7 @@ SYN = ${VPP} ${VFLAGS}
 PACK = ${VITIS_HLS} --package
 IP = vdotprod_hls
 
-CONFIG = --config hls_config.cfg
+CONFIG = --config src/hls_config.cfg
 WORK_DIR = --work_dir ${DIR}
 
 

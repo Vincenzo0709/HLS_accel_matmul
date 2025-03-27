@@ -1,2 +1,4 @@
-vdotprod/
-vdotprod_hls.zip
+hw/vdotprod/
+hw/vdotprod_hls.zip
+hw/.Xil
+hw/xcd.log
