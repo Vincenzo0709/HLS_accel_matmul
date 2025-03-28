@@ -52,15 +52,7 @@ package:
 .PHONY: clean
 clean:
 	@echo "Cleaning..."
-	rm -fr ${DIR}/hls ${DIR}/logs ${DIR}/reports
-	rm -f ${DIR}/${DIR}.hlsrun_csim_summary
-
-	rm -f ${DIR}/${DIR}.hlscompile_summary
-
-	rm -f ${DIR}/${DIR}.hlsrun_cosim_summary
-	
 	rm -f ${IP}.zip
-	rm -f ${DIR}/${DIR}.hlsrun_package_summary
 
 	rm -fr ${DIR}
 	rm -f xcd.log
