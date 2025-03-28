@@ -32,9 +32,15 @@ Help()
 
 Flatten()
 {
-    # Create rtl dir
-    rm -f -r rtl/
-    mkdir rtl
+    # Create build dir
+    if ! [ -d hw/ ]; then
+        mkdir hw
+    fi
+    cd hw
+    rm -rf build/
+    mkdir build/
+    mkdir build/rtl
+    mkdir build/ip
 
     # Clone repo and update submodule to specific branch
     GIT_URL=https://github.com/Vincenzo0709/vdotprod.git
@@ -53,10 +59,10 @@ Flatten()
     printf "${YELLOW}[FETCH_SOURCES] Copying all sources into rtl${NC}\n"
     cd ${HW}
     make syn
-    cp -r vdotprod/hls/syn/ ../rtl
+    cp -r vdotprod/hls/syn/verilog/* ../../build/rtl
     make package
-    cp vdotprod_hls.zip ..
-    cp -r vdotprod/hls/impl/ip/ ..
+    cp vdotprod_hls.zip ../../build/
+    cp -r vdotprod/hls/impl/ip/* ../../build/ip
     cd ../..
 
     # Delete the cloned repo
@@ -92,7 +98,7 @@ fi
 
 
 # Moving to right directory (if you cloned the whole repository instead of using only fetch_sources.sh)
-cd "$(dirname "$0")" ; printf "${GREEN}[FETCH_SOURCES] Starting from directory `pwd -P`${NC}\n"
+cd "$(dirname "$0")" ; printf "\n${GREEN}[FETCH_SOURCES] Starting from directory `pwd -P`${NC}\n"
 if [ "$(basename `pwd -P`)" == "scripts" ]; then
     cd .. ; printf "${GREEN}[FETCH_SOURCES] Moving to directory `pwd -P`${NC}\n"
 fi
