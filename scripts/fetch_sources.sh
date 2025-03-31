@@ -19,9 +19,7 @@ NC='\033[0m' # No Color
 Help()
 {
    echo
-   echo "This script downloads NVDLA nv_small sources and flattens them into an rtl/ directory."
-   echo "Then otpionally prepares Vivado IP from NVDLA nv_small configuration, and Vivado Block"
-   echo "Design for zcu102"
+   echo "This script downloads Vitis HLS vdotprod sources and flattens them into an rtl/ directory."
    echo
    echo "Syntax: fetch_source.sh [--option]"
    echo
