@@ -19,40 +19,55 @@ GIT_URL=https://github.com/Vincenzo0709/Vitis_HLS_accelerators.git
 GIT_TAG=main
 CLONE_DIR=Vitis_HLS_accelerators
 
-declare -A accel_tags
 accel_tags=(["vdotprod"]="v1.0" ["matmul"]="v1.0")
+ACC=("vdotprod" "matmul")
 
 # Display help
-Help()
-{
-   echo
-   echo "This script downloads Vitis HLS accelerators sources and flattens them into build/ directory."
-   echo
-   echo "Syntax: fetch_source.sh [--option]"
-   echo
-   echo "options:"
-   echo "-a | --all             Builds all accelerators"
-   echo "-h | --help            Prints help"
-   echo
+Help() {
+
+   cat << EOF
+
+This script downloads Vitis HLS accelerators sources and flattens them into build/ directory."
+
+Syntax: fetch_source.sh [OPTION] [ARGUMENT]"
+
+Options:
+    -s | --select           Selects only one accelerator to build
+    -a | --all              Builds all accelerators
+    -h | --help             Prints help
+
+EOF
+
 }
 
 GitFlatten()
 {
-    
+    printf "\n${GREEN}[FETCH_SOURCES_TOP] Fetching without git${NC}\n"
     BUILD="`pwd -P`/build"
 
     # Cloning repo and updating submodules to specific tag
-    printf "${YELLOW}[FETCH_SOURCES] Cloning source repository${NC}\n"
+    printf "\n${YELLOW}[FETCH_SOURCES_TOP] Cloning source repository${NC}\n"
     git clone ${GIT_URL} -b ${GIT_TAG} ${CLONE_DIR}
     cd ${CLONE_DIR}
+    git submodule init
     git submodule update --recursive
 
-    for i in ${ACC}; do
+    cd accel/
+    for i in ${ACC[@]}; do
 
-        cd accel/$i/
+        printf "\n${YELLOW}[FETCH_SOURCES_TOP] Checking out %s to %s branch/tag${NC}\n" "$i" "${accel_tags[$i]}"
+        cd $i/
         git fetch
+        git checkout main
         git checkout ${accel_tags[$i]}
-        cd ${WORK_DIR}
+
+        # Accessing each chosen accelerator and building
+        ./scripts/fetch_sources.sh
+
+        # Copying results in build/ directory
+        mkdir -p ${BUILD}/${i}/ip ${BUILD}/${i}/rtl
+        cp -r hw/build/* ${BUILD}/$i
+        cd ..
         
     done
 
@@ -61,31 +76,50 @@ GitFlatten()
     # printf "${YELLOW}[FETCH_SOURCES] Download Bender${NC}\n"
     # curl --proto '=https' --tlsv1.2 https://pulp-platform.github.io/bender/init -sSf | sh
 
-    # Copying all build files
-    printf "${YELLOW}[FETCH_SOURCES] Copying all sources into rtl${NC}\n"
-    for i in ${ACC}; do
-
-        mkdir -p ${BUILD}/${i}/ip ${BUILD}/${i}/rtl
-
-        # Accessing each chosen accelerator and building
-        cd accel/${i}
-        ./scripts/fetch_sources.sh
-
-        # Copying results in build/ directory
-        cp -r build/* ${BUILD}/$i
-
-    done
-
-
     # Deleting the cloned repo
-    printf "${YELLOW}[FETCH_SOURCES] Cleaning all artifacts${NC}\n"
+    cd ${WORK_DIR}
+    printf "\n${YELLOW}[FETCH_SOURCES_TOP] Cleaning all artifacts${NC}\n"
     sudo rm -r ${CLONE_DIR}
-    printf "${GREEN}[FETCH_SOURCES] Completed${NC}\n"
+    printf "\n${GREEN}[FETCH_SOURCES_TOP] Completed${NC}\n"
 
 }
 
+Flatten()
+{
 
-OPTS=$(getopt -o ha --long,all help -n 'fetch_sources.sh' -- "$@")
+    printf "\n${GREEN}[FETCH_SOURCES_TOP] Fetching without git${NC}\n"
+    BUILD="`pwd -P`/build"
+
+    # Updating submodules to specific tag
+    cd accel/
+    for i in ${ACC[@]}; do
+
+        printf "\n${YELLOW}[FETCH_SOURCES_TOP] Checking out %s to %s branch/tag${NC}\n" "$i" "${accel_tags[$i]}"
+        cd $i/
+        git fetch
+        git checkout main
+        git checkout ${accel_tags[$i]}
+
+        # Accessing each chosen accelerator and building
+        ./scripts/fetch_sources.sh
+
+        # Copying results in build/ directory
+        mkdir -p ${BUILD}/${i}/ip ${BUILD}/${i}/rtl
+        cp -r hw/build/* ${BUILD}/$i
+        cd ..
+        
+    done
+
+
+    # Clone Bender (future development)
+    # printf "${YELLOW}[FETCH_SOURCES] Download Bender${NC}\n"
+    # curl --proto '=https' --tlsv1.2 https://pulp-platform.github.io/bender/init -sSf | sh
+
+    printf "\n${GREEN}[FETCH_SOURCES_TOP] Completed${NC}\n"
+
+}
+
+OPTS=$(getopt -o has: --long all,help,select: -n 'fetch_sources.sh' -- "$@")
 eval set -- "$OPTS"
 
 if [ "$OPTS" != " --" ]; then
@@ -96,9 +130,27 @@ if [ "$OPTS" != " --" ]; then
                 Help
                 exit 0
                 ;;
+            -s | --select)
+                # Select only one accelerator
+                sel=(false)
+                for i in ${ACC[@]}; do
+                    if [ "$2" = ${ACC[$i]} ]; then
+                        sel=(true)
+                        ACC_temp=($2)
+                    fi
+                done
+                if ${sel}; then
+                    echo ${sel}
+                    echo "ERROR: invalid selection"
+                    Help
+                    exit 1
+                fi
+                ACC=${ACC_temp}
+                shift 2
+                break
+                ;;
             -a | --all)
                 # All accelerators
-                ACC="vdotprod matmul"
                 shift
                 break
                 ;;
@@ -117,13 +169,12 @@ fi
 
 
 # Moving to right directory (if you cloned the whole repository instead of using only fetch_sources.sh)
-cd "$(dirname "$0")" ; printf "\n${GREEN}[FETCH_SOURCES] Starting from directory `pwd -P`${NC}\n"
+cd "$(dirname "$0")" ; printf "\n${GREEN}[FETCH_SOURCES_TOP] Starting from directory `pwd -P`${NC}\n"
 WORK_DIR=`pwd -P`
 if [ "$(basename `pwd -P`)" == "scripts" ]; then
-    cd .. ; printf "\n${GREEN}[FETCH_SOURCES] Moving to directory `pwd -P`${NC}\n"
+    cd .. ; printf "\n${GREEN}[FETCH_SOURCES_TOP] Moving to directory `pwd -P`${NC}\n"
     WORK_DIR=`pwd -P`
     Flatten
 else
     GitFlatten
 fi
-
