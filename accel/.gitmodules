@@ -1,8 +1,0 @@
-[submodule "vdotprod"]
-	path = vdotprod
-	url = https://github.com/Vincenzo0709/vdotprod.git
-	tag = v1.0
-[submodule "matmul"]
-	path = matmul
-	url = https://github.com/Vincenzo0709/matmul.git
-	tag = v1.0
