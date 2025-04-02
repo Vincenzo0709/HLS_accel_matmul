@@ -1,0 +1,6 @@
+[submodule "accel/vdotprod"]
+	path = accel/vdotprod
+	url = https://github.com/Vincenzo0709/vdotprod.git
+[submodule "accel/matmul"]
+	path = accel/matmul
+	url = https://github.com/Vincenzo0709/matmul.git
